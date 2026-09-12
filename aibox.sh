@@ -12,6 +12,8 @@ git -C "$root" remote add "$name" "$dir"
 
 podman build \
     -t aibox \
+    --build-arg GID=$(id -g) \
+    --build-arg UID=$(id -u) \
     -f "$HOME/.config/aibox/Containerfile" \
     "$HOME/.config/aibox"
 
@@ -21,9 +23,12 @@ exec podman run --rm -it \
     --cap-drop=ALL \
     --security-opt=no-new-privileges \
     --userns=keep-id \
-    --tmpfs /tmp \
-    --tmpfs /run \
     --network=none \
+    --tmpfs /tmp:rw \
+    --tmpfs /run:rw \
+    --user agent \
+    --mount type=tmpfs,destination=/home/agent,U=true,tmpfs-mode=0700 \
+    -e HOME=/home/agent \
     -v "$dir:/work:rw,Z" \
     -w /work \
     aibox
