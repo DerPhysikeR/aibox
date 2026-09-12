@@ -17,6 +17,7 @@ RUN pacman -Syu --noconfirm \
     ripgrep \
     fd \
     jq \
+    ranger \
     && pacman -Scc --noconfirm
 
 ## Coding tools
