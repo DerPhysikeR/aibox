@@ -23,12 +23,13 @@ exec podman run --rm -it \
     --cap-drop=ALL \
     --security-opt=no-new-privileges \
     --userns=keep-id \
-    --network=none \
     --tmpfs /tmp:rw \
     --tmpfs /run:rw \
     --user agent \
     --mount type=tmpfs,destination=/home/agent,U=true,tmpfs-mode=0700 \
     -e HOME=/home/agent \
+    -e OPENCODE_CONFIG=/etc/opencode/opencode.json \
+    -e GITHUB_TOKEN=$(gopass show -o personal/tokens/github-opencode) \
     -v "$dir:/work:rw,Z" \
     -w /work \
     aibox

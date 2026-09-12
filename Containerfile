@@ -40,6 +40,22 @@ compinit
 eval "$(starship init zsh)"
 EOF
 
+RUN mkdir -p /etc/opencode
+RUN cat > /etc/opencode/opencode.json <<'EOF'
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "agent": {
+    "build": {
+      "model": "github-copilot/gpt-5-mini"
+    },
+    "plan": {
+      "model": "github-copilot/claude-sonnet-5"
+    }
+  }
+}
+EOF
+
 # Startup
 USER agent
 WORKDIR /work
