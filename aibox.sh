@@ -38,7 +38,17 @@ trap cleanup EXIT
 
 sleep 1
 
+rsync -rlptvz \
+  --mkpath \
+  --no-owner \
+  --no-group \
+  --chmod=F600 \
+  -e "ssh -p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30" \
+  "$HOME/.pi/agent/auth.json" \
+  agent@localhost:~/.pi/agent/auth.json
+
 ssh -p 2222 \
   -o StrictHostKeyChecking=no \
+  -o UserKnownHostsFile=/dev/null \
   -o ConnectTimeout=30 \
   agent@localhost
