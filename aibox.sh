@@ -1,35 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-root="$(git rev-parse --show-toplevel)"
-name="aibox-$(date +%Y%m%d-%H%M%S)"
-dir="$HOME/.local/share/aibox/$name"
+global_config=~/.config/aibox
+global_qcow=$(tail --lines 1 "$global_config/qcowpath")
 
-mkdir -p "$dir"
-cp -a "$root/." "$dir/"
+project=$(git rev-parse --show-toplevel)
+local_config=$project/.aibox
+mkdir -p "$local_config"
+local_qcow=$local_config/aibox.qcow2
+[ -e "$local_qcow" ] || {
+    cp --reflink=auto "$global_qcow" "$local_qcow"
+    chmod u+w "$local_qcow"
+}
+chmod u+w "$local_qcow"
 
-git -C "$root" remote add "$name" "$dir"
+# -display none -> no GUI
+# -nographic -> serial console directly without ssh
 
-podman build \
-    -t aibox \
-    --build-arg GID=$(id -g) \
-    --build-arg UID=$(id -u) \
-    -f "$HOME/.config/aibox/Containerfile" \
-    "$HOME/.config/aibox"
+qemu-system-x86_64 \
+  -accel kvm \
+  -cpu host \
+  -display none \
+  -m 4G \
+  -smp 2 \
+  -drive file="$local_qcow",format=qcow2,if=virtio \
+  -nic user,model=virtio,hostfwd=tcp::2222-:22 \
+  &
 
-exec podman run --rm -it \
-    --name "$name" \
-    --read-only \
-    --cap-drop=ALL \
-    --security-opt=no-new-privileges \
-    --userns=keep-id \
-    --tmpfs /tmp:rw \
-    --tmpfs /run:rw \
-    --user agent \
-    --mount type=tmpfs,destination=/home/agent,U=true,tmpfs-mode=0700 \
-    -e HOME=/home/agent \
-    -e OPENCODE_CONFIG=/etc/opencode/opencode.json \
-    -e GITHUB_TOKEN=$(gopass show -o personal/tokens/github-opencode) \
-    -v "$dir:/work:rw,Z" \
-    -w /work \
-    aibox
+qemu_pid=$!
+
+cleanup() {
+    kill "$qemu_pid" 2>/dev/null || true
+    wait "$qemu_pid" 2>/dev/null || true
+}
+
+trap cleanup EXIT
+
+sleep 1
+
+ssh -p 2222 \
+  -o StrictHostKeyChecking=no \
+  -o ConnectTimeout=30 \
+  agent@localhost
