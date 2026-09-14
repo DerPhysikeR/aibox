@@ -3,14 +3,16 @@ set -euo pipefail
 
 global_config=~/.config/aibox
 global_qcow=$(tail --lines 1 "$global_config/qcowpath")
-
 project=$(git rev-parse --show-toplevel)
 local_config=$project/.aibox
-mkdir -p "$local_config"
 local_qcow=$local_config/aibox.qcow2
-[ -e "$local_qcow" ] || {
-    cp --reflink=auto "$global_qcow" "$local_qcow"
-    chmod u+w "$local_qcow"
+
+init() {
+    mkdir -p "$local_config"
+    [ -e "$local_qcow" ] || {
+        cp --reflink=auto "$global_qcow" "$local_qcow"
+        chmod u+w "$local_qcow"
+    }
 }
 
 up() {
@@ -39,10 +41,13 @@ connect() {
 }
 
 usage() {
-    echo "Usage: aibox {up|connect}"
+    echo "Usage: aibox {init|up|connect}"
 }
 
 case "${1:-}" in
+    init)
+        init
+        ;;
     up)
         up
         ;;
