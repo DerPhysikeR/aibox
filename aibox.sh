@@ -12,43 +12,45 @@ local_qcow=$local_config/aibox.qcow2
     cp --reflink=auto "$global_qcow" "$local_qcow"
     chmod u+w "$local_qcow"
 }
-chmod u+w "$local_qcow"
 
-# -display none -> no GUI
-# -nographic -> serial console directly without ssh
+up() {
+    echo "Starting AI box..."
 
-qemu-system-x86_64 \
-  -accel kvm \
-  -cpu host \
-  -display none \
-  -m 4G \
-  -smp 2 \
-  -drive file="$local_qcow",format=qcow2,if=virtio \
-  -nic user,model=virtio,hostfwd=tcp::2222-:22 \
-  &
+    # -display none -> no GUI
+    # -nographic -> serial console directly without ssh
 
-qemu_pid=$!
-
-cleanup() {
-    kill "$qemu_pid" 2>/dev/null || true
-    wait "$qemu_pid" 2>/dev/null || true
+    qemu-system-x86_64 \
+      -accel kvm \
+      -daemonize \
+      -cpu host \
+      -display none \
+      -m 4G \
+      -smp 2 \
+      -drive file="$local_qcow",format=qcow2,if=virtio \
+      -nic user,model=virtio,hostfwd=tcp::2222-:22
 }
 
-trap cleanup EXIT
+connect() {
+    ssh -p 2222 \
+      -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      -o ConnectTimeout=30 \
+      agent@localhost
+}
 
-sleep 1
+usage() {
+    echo "Usage: aibox {up|connect}"
+}
 
-rsync -rlptvz \
-  --mkpath \
-  --no-owner \
-  --no-group \
-  --chmod=F600 \
-  -e "ssh -p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30" \
-  "$HOME/.pi/agent/auth.json" \
-  agent@localhost:~/.pi/agent/auth.json
-
-ssh -p 2222 \
-  -o StrictHostKeyChecking=no \
-  -o UserKnownHostsFile=/dev/null \
-  -o ConnectTimeout=30 \
-  agent@localhost
+case "${1:-}" in
+    up)
+        up
+        ;;
+    connect)
+        connect
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac
