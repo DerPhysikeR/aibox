@@ -7,6 +7,7 @@ project=$(git rev-parse --show-toplevel)
 name=$(basename "$project")
 local_config=$project/.aibox
 local_qcow=$local_config/aibox.qcow2
+ssh_opts="-p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
 
 init() {
     mkdir -p "$local_config"
@@ -34,15 +35,16 @@ up() {
 }
 
 connect() {
-    ssh -p 2222 \
-      -o StrictHostKeyChecking=no \
-      -o UserKnownHostsFile=/dev/null \
-      -o ConnectTimeout=30 \
-      agent@localhost
+   rsync -av \
+       --delete \
+       --mkpath \
+       -e "ssh $ssh_opts" \
+       "$HOME/.config/nvim/" \
+       "agent@localhost:.config/nvim/"
+    ssh $ssh_opts agent@localhost
 }
 
 repoinit() {
-    local ssh_opts="-p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
     local remote_url="ssh://agent@localhost:2222/home/agent/.remotes/$name.git"
 
     ssh $ssh_opts agent@localhost \
