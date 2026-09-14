@@ -4,6 +4,7 @@ set -euo pipefail
 global_config=~/.config/aibox
 global_qcow=$(tail --lines 1 "$global_config/qcowpath")
 project=$(git rev-parse --show-toplevel)
+name=$(basename "$project")
 local_config=$project/.aibox
 local_qcow=$local_config/aibox.qcow2
 
@@ -40,8 +41,22 @@ connect() {
       agent@localhost
 }
 
+repoinit() {
+    rsync -av \
+        --mkpath \
+        -e "ssh -p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30" \
+        "$project/.git" \
+        "agent@localhost:~/$name"
+    ssh -p 2222 \
+      -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      agent@localhost \
+      "cd ~/$name && git reset --hard HEAD"
+    git remote add aibox "ssh://agent@localhost:2222/home/agent/$name"
+}
+
 usage() {
-    echo "Usage: aibox {init|up|connect}"
+    echo "Usage: aibox {init|up|connect|repoinit}"
 }
 
 case "${1:-}" in
@@ -53,6 +68,9 @@ case "${1:-}" in
         ;;
     connect)
         connect
+        ;;
+    repoinit)
+        repoinit
         ;;
     *)
         usage
