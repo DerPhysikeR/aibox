@@ -42,17 +42,15 @@ connect() {
 }
 
 repoinit() {
-    rsync -av \
-        --mkpath \
-        -e "ssh -p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30" \
-        "$project/.git" \
-        "agent@localhost:~/$name"
-    ssh -p 2222 \
-      -o StrictHostKeyChecking=no \
-      -o UserKnownHostsFile=/dev/null \
-      agent@localhost \
-      "cd ~/$name && git reset --hard HEAD"
-    git remote add aibox "ssh://agent@localhost:2222/home/agent/$name"
+    local ssh_opts="-p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
+    local remote_url="ssh://agent@localhost:2222/home/agent/.remotes/$name.git"
+
+    ssh $ssh_opts agent@localhost \
+        "mkdir -p ~/.remotes && git init --bare --initial-branch=main ~/.remotes/${name}.git"
+    git remote set-url aibox "$remote_url" 2>/dev/null || git remote add aibox "$remote_url"
+    git push aibox main
+    ssh $ssh_opts agent@localhost \
+        "cd ~ && git clone ~/.remotes/${name}.git $name"
 }
 
 usage() {
