@@ -56,6 +56,7 @@
   # Shell
   # ---------------------------------------------------------------------------
 
+  programs.yazi.enable = true;
   programs.zsh.enable = true;
 
   programs.starship = {
@@ -102,6 +103,7 @@
     jq
     ranger
     htop
+    fzf
 
     # Container tooling
     podman
