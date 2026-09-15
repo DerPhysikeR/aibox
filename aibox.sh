@@ -35,6 +35,14 @@ up() {
 }
 
 connect() {
+   rsync -avL \
+       --delete \
+       --mkpath \
+       -e "ssh $ssh_opts" \
+       "$HOME/.config/tmux/" \
+       "agent@localhost:.config/tmux/"
+   ssh $ssh_opts agent@localhost \
+       "./.config/tmux/plugins/tpm/bin/install_plugins"
    rsync -av \
        --delete \
        --mkpath \
