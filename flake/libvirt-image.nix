@@ -12,8 +12,8 @@
     fsType = "ext4";
   };
 
-  # BIOS/GRUB bootable image. This works nicely with ordinary libvirt/QEMU.
-  boot.loader.grub.device = lib.mkDefault "/dev/sda";
+  # BIOS/GRUB bootable image. QEMU/libvirt presents the virtio disk as /dev/vda.
+  boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
   # Build target for a standalone qcow2 disk image.
   system.build.qcow2 =
