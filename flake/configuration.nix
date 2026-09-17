@@ -120,6 +120,7 @@
     # in the original Containerfile.
     curl
     wget
+    rsync
     tree
     file
     unzip
