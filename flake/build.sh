@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-nix flake update
-
 qcow_out=$(
   nix build .#nixosConfigurations.agent.config.system.build.qcow2 \
     --no-link \
