@@ -1,0 +1,4 @@
+github.com
+*.github.com
+*.githubusercontent.com
+cache.nixos.org

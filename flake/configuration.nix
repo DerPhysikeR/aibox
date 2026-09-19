@@ -171,6 +171,18 @@
   # DHCP should be sufficient when attached to a normal libvirt NAT network.
   networking.useDHCP = lib.mkDefault true;
 
+  networking.proxy = {
+    default = "http://10.0.2.100:8888";
+    noProxy = "127.0.0.1,localhost,::1";
+  };
+
+  # Compatibility with programs that only check uppercase variants.
+  environment.variables = {
+    HTTP_PROXY  = "http://10.0.2.100:8888";
+    HTTPS_PROXY = "http://10.0.2.100:8888";
+    NO_PROXY    = "127.0.0.1,localhost,::1";
+  };
+
   # No desktop environment, display manager, X11, etc.
   # NixOS is headless unless you explicitly configure those things.
 

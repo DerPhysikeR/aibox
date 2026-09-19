@@ -7,6 +7,7 @@ project=$(git rev-parse --show-toplevel)
 name=$(basename "$project")
 local_config=$project/.aibox
 local_qcow=$local_config/aibox.qcow2
+local_tinyproxy=$local_config/tinyproxy.conf
 ssh_opts="-p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
 
 init() {
@@ -23,6 +24,8 @@ up() {
     # -display none -> no GUI
     # -nographic -> serial console directly without ssh
 
+    tinyproxy -c "$local_tinyproxy"
+
     qemu-system-x86_64 \
       -accel kvm \
       -daemonize \
@@ -31,7 +34,7 @@ up() {
       -m 4G \
       -smp 2 \
       -drive file="$local_qcow",format=qcow2,if=virtio \
-      -nic user,model=virtio,hostfwd=tcp::2222-:22
+      -nic 'user,model=virtio,hostfwd=tcp::2222-:22,restrict=on,guestfwd=tcp:10.0.2.100:8888-cmd:nc 127.0.0.1 8888'
 }
 
 connect() {
