@@ -10,6 +10,7 @@ Required dependencies:
 - `qemu-system-x86_64`
 - `ssh`
 - `git`
+- tinyproxy
 
 1. Build the base VM image:
    ```bash

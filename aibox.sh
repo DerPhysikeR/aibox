@@ -8,7 +8,9 @@ name=$(basename "$project")
 local_config=$project/.aibox
 local_qcow=$local_config/aibox.qcow2
 local_tinyproxy=$local_config/tinyproxy.conf
-ssh_opts="-p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
+ssh_port=$(cat "$local_config/ssh_port" 2>/dev/null || echo 2222)
+proxy_port=$(cat "$local_config/proxy_port" 2>/dev/null || echo 8888)
+ssh_opts="-p ${ssh_port} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
 
 init() {
     mkdir -p "$local_config"
@@ -16,6 +18,12 @@ init() {
         cp --reflink=auto "$global_qcow" "$local_qcow"
         chmod u+w "$local_qcow"
     }
+    ssh_port=$(shuf -i 1025-65536 -n 1)
+    proxy_port=$(shuf -i 1025-65536 -n 1)
+    echo $ssh_port > "$local_config/ssh_port"
+    echo $proxy_port > "$local_config/proxy_port"
+    AIBOX_DIR="$local_config" AIBOX_PORT="$proxy_port" envsubst < "$global_config/tinyproxy.conf" > "$local_tinyproxy"
+    cp "$global_config/tinyproxy.whitelist" "$local_config"
 }
 
 up() {
@@ -34,7 +42,7 @@ up() {
       -m 4G \
       -smp 2 \
       -drive file="$local_qcow",format=qcow2,if=virtio \
-      -nic 'user,model=virtio,hostfwd=tcp::2222-:22,restrict=on,guestfwd=tcp:10.0.2.100:8888-cmd:nc 127.0.0.1 8888'
+      -nic "user,model=virtio,hostfwd=tcp::${ssh_port}-:22,restrict=on,guestfwd=tcp:10.0.2.100:8888-cmd:nc 127.0.0.1 ${proxy_port}"
 }
 
 connect() {
@@ -56,7 +64,7 @@ connect() {
 }
 
 repoinit() {
-    local remote_url="ssh://agent@localhost:2222/home/agent/.remotes/$name.git"
+    local remote_url="ssh://agent@localhost:${ssh_port}/home/agent/.remotes/$name.git"
 
     ssh $ssh_opts agent@localhost \
         "mkdir -p ~/.remotes && git init --bare --initial-branch=main ~/.remotes/${name}.git"
