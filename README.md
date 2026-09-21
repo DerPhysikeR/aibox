@@ -6,33 +6,42 @@ An isolated environment for secure local AI development.
 
 Required dependencies:
 
-- [Nix](https://nixos.org/)
 - `qemu-system-x86_64`
 - `ssh`
 - `git`
 - tinyproxy
 
-1. Build the base VM image:
+optional dependencies:
+- [Nix](https://nixos.org/)
+- rsync
+
+1. Run `./install.sh`
+2. Append the path to your qcow2 image to `~/.config/aibox/qcowpath`, or if you don't have one, build it with:
    ```bash
    cd flake
    ./build.sh
    ```
-2. Symlink `ln -s aibox.sh ~/.local/bin/aibox` or wherever your `$PATH` points to
-3. Go to the working directory of a git repository and run:
-   ```bash
-   aibox init
-   aibox up
-   aibox connect
-   ```
+3. Adapt the `connect` function in `aibox.sh` to your needs (it currently copies your neovim and tmux configurations into the VM)
 
-This will result in the following:
+From now on you can go into any git repository and run:
+ - `aibox init` to set up a local copy for this specific repository
+ - `aibox up` to start the VM
+ - `aibox repoinit` to set up the git remote inside the VM and a working copy for the agent
+ - `aibox connect` to connect to the VM over SSH to work on your project
 
-1. Builds a reusable NixOS qcow2 image and records its path in `~/.config/aibox/qcowpath`
-2. Copies that image to `.aibox/aibox.qcow2` in your current git repository
-3. Starts the VM with QEMU
-4. Connects to it over SSH as `agent@localhost:2222`
+## Architecture
 
-That way, whatever the AI agent does, is isolated from your local environment.
+This project only consists of a few wrapper scripts which run the agent inside
+a VM using qemu, blocking all network access beside a local tinyproxy instance,
+which supports a domain witelist or blacklist as well as audit logging, so you
+can control and monitor the agent's network access.
+
+It also offers a NixOS configuration from which you can build a reusable VM
+image if you want.
+
+There is no shared directory between the host and the VM to minimize the attack
+surface, instead a bare git repo is created inside the VM which acts as a remote
+for the host and the working copy of the agent.
 
 ## Why not just run it directly
 
