@@ -26,6 +26,7 @@ optional dependencies:
 From now on you can go into any git repository and run:
  - `aibox init` to set up a local copy for this specific repository
  - `aibox up` to start the VM
+ - `aibox down` to gracefully stop the VM and its proxy
  - `aibox repoinit` to set up the git remote inside the VM and a working copy for the agent
  - `aibox connect` to connect to the VM over SSH to work on your project
 

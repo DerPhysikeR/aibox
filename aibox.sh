@@ -8,6 +8,8 @@ name=$(basename "$project")
 local_config=$project/.aibox
 local_qcow=$local_config/aibox.qcow2
 local_tinyproxy=$local_config/tinyproxy.conf
+local_qemu_pid=$local_config/qemu.pid
+local_tinyproxy_pid=$local_config/tinyproxy.pid
 ssh_port=$(cat "$local_config/ssh_port" 2>/dev/null || echo 2222)
 proxy_port=$(cat "$local_config/proxy_port" 2>/dev/null || echo 8888)
 ssh_opts="-p ${ssh_port} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30"
@@ -37,12 +39,19 @@ up() {
     qemu-system-x86_64 \
       -accel kvm \
       -daemonize \
+      -pidfile "$local_qemu_pid" \
       -cpu host \
       -display none \
       -m 4G \
       -smp 2 \
       -drive file="$local_qcow",format=qcow2,if=virtio \
       -nic "user,model=virtio,hostfwd=tcp::${ssh_port}-:22,restrict=on,guestfwd=tcp:10.0.2.100:8888-cmd:nc 127.0.0.1 ${proxy_port}"
+}
+
+down() {
+    echo "Stopping AI box..."
+    kill -TERM "$(cat "$local_qemu_pid")"
+    kill -TERM "$(cat "$local_tinyproxy_pid")"
 }
 
 connect() {
@@ -75,7 +84,7 @@ repoinit() {
 }
 
 usage() {
-    echo "Usage: aibox {init|up|connect|repoinit}"
+    echo "Usage: aibox {init|up|down|connect|repoinit}"
 }
 
 case "${1:-}" in
@@ -84,6 +93,9 @@ case "${1:-}" in
         ;;
     up)
         up
+        ;;
+    down)
+        down
         ;;
     connect)
         connect
