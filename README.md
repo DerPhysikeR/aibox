@@ -6,9 +6,9 @@ An isolated environment for secure local AI development.
 
 Required dependencies:
 
-- `qemu-system-x86_64`
-- `ssh`
-- `git`
+- qemu-system-x86_64
+- ssh
+- git
 - tinyproxy
 
 optional dependencies:
