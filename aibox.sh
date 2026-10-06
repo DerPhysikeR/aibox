@@ -69,7 +69,12 @@ connect() {
        -e "ssh $ssh_opts" \
        "$HOME/.config/nvim/" \
        "agent@localhost:.config/nvim/"
-    ssh $ssh_opts agent@localhost
+
+    if [[ -n "${TMUX:-}" ]]; then
+        ssh $ssh_opts agent@localhost
+    else
+        kitty +kitten ssh --kitten interpreter=sh $ssh_opts agent@localhost
+    fi
 }
 
 repoinit() {
