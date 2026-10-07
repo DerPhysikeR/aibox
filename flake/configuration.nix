@@ -11,6 +11,28 @@
   ];
 
   # ---------------------------------------------------------------------------
+  # Comin
+  # ---------------------------------------------------------------------------
+
+  services.comin = {
+    enable = true;
+    repositorySubdir = "flake";
+    remotes = [
+      {
+        name = "origin";
+        url = "https://github.com/DerPhysikeR/aibox.git";
+        branches.main.name = "main";
+      }
+    ];
+    sshAllowedSignersPath = "/etc/comin/allowed-signers";
+  };
+
+  # OpenSSH allowed signers format: principal, key type, then public key.
+  environment.etc."comin/allowed-signers".text = ''
+    reiter.paul@gmail.com sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIGQS9vFxqrm2RCuMYVQCKMwvWAkX4MfU++9Y8tIg0uaWAAAADHNzaDpwZXJzb25hbA==
+  '';
+
+  # ---------------------------------------------------------------------------
   # User
   # ---------------------------------------------------------------------------
 

@@ -4,9 +4,13 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     llm-agents.url = "github:numtide/llm-agents.nix";
+    comin = {
+      url = "github:nlewo/comin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, llm-agents, ... }:
+  outputs = { self, nixpkgs, llm-agents, comin, ... }:
     let
       system = "x86_64-linux";
     in {
@@ -15,6 +19,7 @@
         specialArgs = { inherit llm-agents; };
 
         modules = [
+          comin.nixosModules.comin
           ./configuration.nix
           ./libvirt-image.nix
         ];
