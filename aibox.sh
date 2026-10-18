@@ -29,6 +29,12 @@ init() {
 }
 
 up() {
+    local net_restrict="restrict=on,"
+    if [[ "${1:-}" == "--no-restrict" ]]; then
+        net_restrict=""
+        echo "WARNING: network restriction disabled, the VM has full internet access."
+    fi
+
     echo "Starting AI box..."
 
     # -display none -> no GUI
@@ -45,7 +51,7 @@ up() {
       -m 4G \
       -smp 2 \
       -drive file="$local_qcow",format=qcow2,if=virtio \
-      -nic "user,model=virtio,hostfwd=tcp::${ssh_port}-:22,restrict=on,guestfwd=tcp:10.0.2.100:8888-cmd:nc 127.0.0.1 ${proxy_port}"
+      -nic "user,model=virtio,hostfwd=tcp::${ssh_port}-:22,${net_restrict}guestfwd=tcp:10.0.2.100:8888-cmd:nc 127.0.0.1 ${proxy_port}"
 }
 
 down() {
@@ -89,7 +95,7 @@ repoinit() {
 }
 
 usage() {
-    echo "Usage: aibox {init|up|down|connect|repoinit}"
+    echo "Usage: aibox {init|up [--no-restrict]|down|connect|repoinit}"
 }
 
 case "${1:-}" in
@@ -97,7 +103,7 @@ case "${1:-}" in
         init
         ;;
     up)
-        up
+        up "${2:-}"
         ;;
     down)
         down
