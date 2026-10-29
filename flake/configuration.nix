@@ -138,6 +138,7 @@
 
     # Development environments
     devenv
+    uv
 
     # Things I would add for an agent VM even though they weren't explicitly
     # in the original Containerfile.
