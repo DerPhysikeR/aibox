@@ -88,6 +88,8 @@ connect() {
     
         git config --global --get user.email >/dev/null 2>&1 ||
             git config --global user.email $quoted_email
+
+        git config --global credential.helper store
     "
 
     if [[ -n "${TMUX:-}" ]]; then
