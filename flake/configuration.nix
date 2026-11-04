@@ -51,6 +51,22 @@
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDXNvziLL1UxkbwWlm+ZcskAJvNtGN1viwkuG2ZEYMYE paul@workpad"
     ];
   };
+  
+  # ---------------------------------------------------------------------------
+  # Home Manager
+  # ---------------------------------------------------------------------------
+
+  home-manager.users.agent = {
+    home.stateVersion = "26.05";
+
+    programs.git = {
+      enable = true;
+      settings.user = {
+        name = "Paul Reiter";
+        email = "reiter.paul@gmail.com";
+      };
+    };
+  };
 
   # Since this machine is deliberately disposable, passwordless sudo inside
   # the VM is reasonable. The isolation boundary is the VM, not sudo.
