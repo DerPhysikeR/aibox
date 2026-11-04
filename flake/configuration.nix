@@ -127,6 +127,7 @@
     ranger
     htop
     fzf
+    glab
 
     # Container tooling
     podman
