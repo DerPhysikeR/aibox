@@ -76,6 +76,20 @@ connect() {
        "$HOME/.config/nvim/" \
        "agent@localhost:.config/nvim/"
 
+    git_name=$(git config --get user.name)
+    git_email=$(git config --get user.email)
+    
+    printf -v quoted_name '%q' "$git_name"
+    printf -v quoted_email '%q' "$git_email"
+    
+    ssh $ssh_opts agent@localhost "
+        git config --global --get user.name >/dev/null 2>&1 ||
+            git config --global user.name $quoted_name
+    
+        git config --global --get user.email >/dev/null 2>&1 ||
+            git config --global user.email $quoted_email
+    "
+
     if [[ -n "${TMUX:-}" ]]; then
         ssh $ssh_opts agent@localhost
     else
