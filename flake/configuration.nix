@@ -134,7 +134,6 @@
 
     # Editors / coding agents
     neovim
-    opencode
     llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi
 
     # Development environments
