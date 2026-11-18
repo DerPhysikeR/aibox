@@ -90,6 +90,7 @@ connect() {
             git config --global user.email $quoted_email
 
         git config --global credential.helper store
+        git config --global core.commentChar '*'
     "
 
     if [[ -n "${TMUX:-}" ]]; then
